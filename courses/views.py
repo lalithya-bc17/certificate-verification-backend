@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from core.models import Student
 from core.permissions import IsStudent
 from .models import Certificate
+import hashlib
+from django.conf import settings
 
 from .models import (
     Course, Lesson, Enrollment, Progress,
@@ -485,10 +487,13 @@ def certificate(request, course_id):
     if not certificate_obj.issued_at:
         certificate_obj.issued_at = now()
         certificate_obj.save()
+    if not certificate_obj.hash:
+        certificate_obj.hash = generate_hash(certificate_obj)
+        certificate_obj.save()
     
     RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
 
-    verify_url = f"{RENDER_BASE_URL}{reverse('verify_certificate', args=[certificate_obj.id])}"   
+    verify_url = f"{RENDER_BASE_URL}{reverse('verify_certificate', args=[certificate_obj.id])}?hash={certificate_obj.hash}" 
     print("VERIFY URL:", verify_url)
     
 
@@ -548,16 +553,27 @@ def verify_certificate(request, id):
             "status": "invalid"
         })
 
+    # ❌ Tampered QR
+    if request.GET.get("hash") != certificate.hash:
+        return render(request, "courses/verify_certificate.html", {
+            "status": "invalid"
+        })
+
+    # 🚫 Revoked
     if certificate.is_revoked:
         return render(request, "courses/verify_certificate.html", {
             "status": "revoked",
             "certificate_id": certificate.id
         })
 
+    # ✅ Valid
     return render(request, "courses/verify_certificate.html", {
         "status": "valid",
         "student": certificate.student.get_full_name() or certificate.student.username,
         "course": certificate.course.title,
-        "issued_at": certificate.issued_at.strftime("%d %B %Y") if certificate.issued_at else "—",
+        "issued_at": certificate.issued_at.strftime("%d %B %Y"),
         "certificate_id": certificate.id,
     })
+def generate_hash(certificate):
+    raw = f"{certificate.id}|{certificate.student_id}|{certificate.course_id}|{settings.SECRET_KEY}"
+    return hashlib.sha256(raw.encode()).hexdigest()

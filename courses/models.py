@@ -95,3 +95,4 @@ class Certificate(models.Model):
         unique_together = ("student", "course")
     def __str__(self):
         return f"{self.student.username} - {self.course.title}"
+    hash = models.CharField(max_length=64, blank=True) 

@@ -479,21 +479,14 @@ def certificate(request, course_id):
         course=course,
     )
     # 🚫 Block revoked certificates from downloading
-    if certificate_obj.is_revoked:
-        return HttpResponse(
-        "This certificate has been revoked and cannot be downloaded.",
-        status=403
-    )
+    
     if not certificate_obj.issued_at:
         certificate_obj.issued_at = now()
-        certificate_obj.save()
-    if not certificate_obj.hash:
-        certificate_obj.hash = generate_hash(certificate_obj)
         certificate_obj.save()
     
     RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
 
-    verify_url = f"{RENDER_BASE_URL}{reverse('verify_certificate', args=[certificate_obj.id])}?hash={certificate_obj.hash}" 
+    verify_url = f"https://certificate-verification-backend-7gpb.onrender.com/verify-certificate/{certificate_obj.id}/" 
     print("VERIFY URL:", verify_url)
     
 
@@ -544,7 +537,6 @@ from django.shortcuts import get_object_or_404, render
 
 from django.shortcuts import render, get_object_or_404
 from .models import Certificate
-
 def verify_certificate(request, id):
     try:
         certificate = Certificate.objects.get(id=id)
@@ -553,27 +545,16 @@ def verify_certificate(request, id):
             "status": "invalid"
         })
 
-    # ❌ Tampered QR
-    if request.GET.get("hash") != certificate.hash:
-        return render(request, "courses/verify_certificate.html", {
-            "status": "invalid"
-        })
-
-    # 🚫 Revoked
     if certificate.is_revoked:
         return render(request, "courses/verify_certificate.html", {
             "status": "revoked",
             "certificate_id": certificate.id
         })
 
-    # ✅ Valid
     return render(request, "courses/verify_certificate.html", {
         "status": "valid",
         "student": certificate.student.get_full_name() or certificate.student.username,
         "course": certificate.course.title,
-        "issued_at": certificate.issued_at.strftime("%d %B %Y"),
+        "issued_at": certificate.issued_at.strftime("%d %B %Y") if certificate.issued_at else "—",
         "certificate_id": certificate.id,
     })
-def generate_hash(certificate):
-    raw = f"{certificate.id}|{certificate.student_id}|{certificate.course_id}|{settings.SECRET_KEY}"
-    return hashlib.sha256(raw.encode()).hexdigest()

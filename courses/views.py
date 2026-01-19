@@ -536,29 +536,22 @@ from .models import Certificate
 
 def verify_certificate(request, id):
     try:
-        # IMPORTANT: use uuid, not id
-        certificate = Certificate.objects.get(uuid=id)
-
+        certificate = Certificate.objects.get(id=id)
     except Certificate.DoesNotExist:
-        # ❌ Invalid certificate
-        return render(request, "courses/invalid_certificate.html")
+        return render(request, "courses/verify_certificate.html", {
+            "status": "invalid"
+        })
 
     if certificate.is_revoked:
-        # 🚫 Revoked certificate
-        return render(
-            request,
-            "courses/revoked_certificate.html",
-            {
-                "certificate_id": certificate.uuid
-            }
-        )
+        return render(request, "courses/verify_certificate.html", {
+            "status": "revoked",
+            "certificate_id": certificate.id
+        })
 
-    # ✅ Valid certificate
-    context = {
+    return render(request, "courses/verify_certificate.html", {
+        "status": "valid",
         "student": certificate.student.get_full_name() or certificate.student.username,
         "course": certificate.course.title,
         "issued_at": certificate.issued_at.strftime("%d %B %Y") if certificate.issued_at else "—",
-        "certificate_id": certificate.uuid,
-    }
-
-    return render(request, "courses/verify_certificate.html", context)
+        "certificate_id": certificate.id,
+    })

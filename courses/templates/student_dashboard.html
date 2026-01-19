@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{% static 'courses/dashboard.css' %}">
+</head>
+<body>
+
+<h1>My Learning Dashboard</h1>
+
+{% for c in dashboard %}
+<div class="course-card">
+    <h2>{{ c.course }}</h2>
+
+    <div class="progress-container">
+        <div class="progress-bar" style="width: {{ c.progress }}%"></div>
+    </div>
+
+    <p>{{ c.completed }} / {{ c.total_lessons }} lessons completed</p>
+
+    <a href="/api/student/course/{{ c.course_id }}/resume/" class="btn">
+        ▶ Continue Learning
+    </a>
+
+    <a href="/courses/{{ c.course_id }}/lessons/" class="btn-secondary">
+        View Lessons
+    </a>
+</div>
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Civora Nexus Certificate</title>
+
+<style>
+@page {
+    size: A4 landscape;
+    margin: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #ffffff;
+}
+
+.certificate {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 60px;
+    border: 6px solid #1B9AAA;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* ===== WATERMARK PEOPLE IMAGE ===== */
+.watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    opacity: 0.06;
+    z-index: 0;
+}
+
+/* ===== TOP LEFT SHAPES ===== */
+.decor-top-rect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100px;
+    background: #1B9AAA;
+    z-index: 1;
+}
+
+.decor-top-triangle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-right: 100px solid transparent;
+    border-top: 100px solid #142C52;
+    z-index: 2;
+}
+
+/* ===== BOTTOM RIGHT SHAPES ===== */
+.decor-bottom-rect {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 220px;
+    height: 120px;
+    background: #1B9AAA;
+    z-index: 1;
+}
+
+.decor-bottom-triangle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-left: 120px solid transparent;
+    border-bottom: 120px solid #142C52;
+    z-index: 2;
+}
+
+/* ===== HEADER ===== */
+.header {
+    text-align: center;
+    margin-top: 30px;
+    position: relative;
+    z-index: 3;
+}
+
+.logo {
+    height: 60px;
+}
+
+/* ===== TITLES ===== */
+.title {
+    margin-top: 80px;
+    text-align: center;
+    font-size: 60px;
+    font-weight: bold;
+    color: #142C52;
+    position: relative;
+    z-index: 3;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: #1B9AAA;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 3;
+}
+
+/* ===== CONTENT ===== */
+.content {
+    text-align: center;
+    padding: 0 140px;
+    color: #071426;
+    line-height: 1.7;
+    position: relative;
+    z-index: 3;
+}
+
+.name {
+    font-size: 32px;
+    font-weight: bold;
+    color: #1B9AAA;
+    margin: 20px 0;
+}
+
+.course {
+    font-weight: bold;
+    color: #142C52;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+    position: absolute;
+    bottom: 60px;   /* 👈 moves signature DOWN */
+    left: 120px;
+    right: 140px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 3;
+}
+
+.signature {
+    text-align: center;
+}
+
+.signature-line {
+    width: 200px;
+    height: 2px;
+    background: #142C52;
+    margin-bottom: 6px;
+}
+
+.sign-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+.signature:first-child {
+    margin-right: 30px;
+}
+
+.role {
+    font-size: 12px;
+    color: #1B9AAA;
+}
+
+/* ===== QR CODE (REPLACES SIGNATURE) ===== */
+.qr-section {
+    text-align: center;
+    margin-right: 40px;
+}
+
+.qr-section img {
+    width: 90px;
+    height: 90px;
+}
+
+.qr-text {
+    font-size: 10px;
+    margin-top: 6px;
+    color: #142C52;
+}
+
+/* ===== DATE & NOTE ===== */
+.date {
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    z-index: 3;
+}
+
+.system-note {
+    position: absolute;
+    bottom: 18px;
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    color: #777;
+    z-index: 3;
+}
+</style>
+</head>
+
+<body>
+<div class="certificate">
+
+    <!-- Watermark -->
+    <img src="{{ people_icon }}" class="watermark">
+
+    <!-- Shapes -->
+    <div class="decor-top-rect"></div>
+    <div class="decor-top-triangle"></div>
+    <div class="decor-bottom-rect"></div>
+    <div class="decor-bottom-triangle"></div>
+
+    <!-- Logo -->
+    <div class="header">
+        <img src="{{ logo_path }}" class="logo">
+    </div>
+
+    <!-- Title -->
+    <div class="title">CERTIFICATE</div>
+    <div class="subtitle">OF PARTICIPATION</div>
+
+    <!-- Content -->
+    <div class="content">
+        <p>THIS CERTIFICATE IS AWARDED TO</p>
+        <div class="name">{{ student_name }}</div>
+        <p>
+            Successfully completed the <span class="course">{{ course_name }}</span> organized by
+            <strong>Civora Nexus</strong>. The session covered Git & GitHub concepts,
+            version control workflows, collaboration practices, and professional repository
+            management essential for internships and industry projects.
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <!-- CEO Signature -->
+        <div class="signature">
+            <div class="signature-line"></div>
+            <div class="sign-name">SHUBHAM DIGHE</div>
+            <div class="role">CEO & Founder</div>
+        </div>
+
+        <!-- QR Code (Replaces Deepak Kumar) -->
+        <div class="qr-section">
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code">
+            <div class="qr-text">Scan to verify</div>
+        </div>
+    </div>
+
+    <div class="date">Date: {{ date }}</div>
+    <div class="system-note">This is a system-generated certificate • civoranexus.com</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f6f9;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 90%;
+            max-width: 520px;
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .status span {
+            font-size: 26px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 15px;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 700;
+            color: #333;
+        }
+
+        .value {
+            color: #000;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 22px;
+            font-size: 13px;
+            color: #777;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .row {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .value {
+                text-align: left;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+
+        {% if status == "valid" %}
+        <!-- ✅ VALID -->
+        <div class="status" style="color:#2e7d32;">
+            <span>✅</span> Certificate Verified
+        </div>
+
+        <div class="row">
+            <div class="label">Student</div>
+            <div class="value">{{ student }}</div>
+        </div>
+
+        <div class="row">
+            <div class="label">Course</div>
+            <div class="value">{{ course }}</div>
+        </div>
+
+        <div class="row">
+            <div class="label">Issued on</div>
+            <div class="value">{{ issued_at }}</div>
+        </div>
+
+        <div class="row">
+            <div class="label">Certificate ID</div>
+            <div class="value">{{ certificate_id }}</div>
+        </div>
+
+        <div class="footer">
+            This certificate is digitally verified and valid.
+        </div>
+
+
+        {% elif status == "revoked" %}
+        <!-- ⚠ REVOKED -->
+        <div class="status" style="color:#f57c00;">
+            <span>⚠️</span> Certificate Revoked
+        </div>
+
+        <div class="footer">
+            This certificate has been revoked by the issuing authority.
+        </div>
+
+
+        {% else %}
+        <!-- ❌ INVALID -->
+        <div class="status" style="color:#d32f2f;">
+            <span>❌</span> Invalid Certificate
+        </div>
+
+        <div class="footer">
+            The certificate you are trying to verify does not exist.
+        </div>
+
+        {% endif %}
+
+    </div>
+</body>
+</html>

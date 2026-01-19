@@ -476,6 +476,12 @@ def certificate(request, course_id):
         student=user,                    # ✅ User model (matches Certificate)
         course=course,
     )
+    # 🚫 Block revoked certificates from downloading
+    if certificate_obj.is_revoked:
+        return HttpResponse(
+        "This certificate has been revoked and cannot be downloaded.",
+        status=403
+    )
     if not certificate_obj.issued_at:
         certificate_obj.issued_at = now()
         certificate_obj.save()

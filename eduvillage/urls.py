@@ -7,6 +7,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf import settings
 from django.conf.urls.static import static
+from core.views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,6 +20,8 @@ urlpatterns = [
     path('api/', include('core.urls')),        # core app APIs
     path('api/', include('courses.urls')),     # courses app APIs
     path('', include('courses.urls')),         # frontend routes (optional)
+    path("", home, name="home"),
+    path("admin/", admin.site.urls),
 ]
 
 # Serve media files during development

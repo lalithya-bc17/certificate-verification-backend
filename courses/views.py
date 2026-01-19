@@ -480,9 +480,9 @@ def certificate(request, course_id):
         certificate_obj.issued_at = now()
         certificate_obj.save()
     
-    verify_url = request.build_absolute_uri(
-    reverse("verify_certificate", args=[certificate_obj.id])
-   )
+    RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
+
+    verify_url = f"{RENDER_BASE_URL}{reverse('verify_certificate', args=[certificate_obj.id])}"   
     print("VERIFY URL:", verify_url)
     
 
@@ -536,23 +536,29 @@ from .models import Certificate
 
 def verify_certificate(request, id):
     try:
-        certificate = Certificate.objects.get(id=id)
+        # IMPORTANT: use uuid, not id
+        certificate = Certificate.objects.get(uuid=id)
+
     except Certificate.DoesNotExist:
         # ❌ Invalid certificate
         return render(request, "courses/invalid_certificate.html")
 
     if certificate.is_revoked:
         # 🚫 Revoked certificate
-        return render(request, "courses/revoked_certificate.html", {
-            "certificate_id": certificate.id
-        })
+        return render(
+            request,
+            "courses/revoked_certificate.html",
+            {
+                "certificate_id": certificate.uuid
+            }
+        )
 
     # ✅ Valid certificate
     context = {
         "student": certificate.student.get_full_name() or certificate.student.username,
         "course": certificate.course.title,
-        "issued_on": certificate.issued_at.strftime("%d %B %Y") if certificate.issued_at else "—",
-        "certificate_id": certificate.id,
+        "issued_at": certificate.issued_at.strftime("%d %B %Y") if certificate.issued_at else "—",
+        "certificate_id": certificate.uuid,
     }
 
     return render(request, "courses/verify_certificate.html", context)

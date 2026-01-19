@@ -121,15 +121,18 @@
 
 
         {% elif status == "revoked" %}
-        <!-- ⚠ REVOKED -->
         <div class="status" style="color:#f57c00;">
             <span>⚠️</span> Certificate Revoked
+        </div>
+
+        <div class="row">
+            <div class="label">Certificate ID</div>
+            <div class="value">{{ certificate_id }}</div>
         </div>
 
         <div class="footer">
             This certificate has been revoked by the issuing authority.
         </div>
-
 
         {% else %}
         <!-- ❌ INVALID -->

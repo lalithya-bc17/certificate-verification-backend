@@ -4,8 +4,12 @@
     <title>Certificate Revoked</title>
 </head>
 <body>
-    <h2 style="color:orange;">🚫 Certificate Revoked</h2>
-    <p>This certificate has been revoked by the issuer.</p>
-    <p><strong>Certificate ID:</strong> {{ certificate_id }}</p>
+    <div class="status" style="color:#d32f2f;">
+    <span>❌</span> Invalid Certificate
+</div>
+
+<div class="footer">
+    The certificate you are trying to verify does not exist.
+</div>
 </body>
 </html>

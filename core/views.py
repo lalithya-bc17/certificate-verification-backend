@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Student, Teacher
 from .serializers import StudentSerializer, TeacherSerializer
 from .permissions import IsStudent, IsTeacher
+from django.shortcuts import render
 
 
 @api_view(['GET'])
@@ -20,3 +21,7 @@ def teachers_list(request):
     teachers = Teacher.objects.all()
     serializer = TeacherSerializer(teachers, many=True)
     return Response(serializer.data)
+
+
+def home(request):
+    return render(request, 'home.html')

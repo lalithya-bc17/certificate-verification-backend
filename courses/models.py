@@ -17,7 +17,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     order = models.IntegerField(default=1)
-    video = models.FileField(upload_to="lesson_videos/", blank=True, null=True)
+    video_url = models.URLField(blank=True, null=True)
     # One quiz per lesson
     quiz = models.OneToOneField("Quiz", on_delete=models.SET_NULL, null=True, blank=True, related_name="lesson")
 

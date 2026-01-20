@@ -3,7 +3,7 @@
 {% for l in lessons %}
 <div class="lesson">
     {% if l.unlocked %}
-        ✔ <a href="/api/lesson/{{ l.id }}/">{{ l.title }}</a>
+        ✔ <a href="/lesson/{{ l.id }}/">{{ l.title }}</a>
     {% else %}
         🔒 {{ l.title }}
     {% endif %}

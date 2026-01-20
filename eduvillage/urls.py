@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/', include('courses.urls')),     # courses app APIs
     path('', include('courses.urls')),         # frontend routes (optional)
     path("", home, name="home"),
-    path("admin/", admin.site.urls),
+    
 ]
 
 # Serve media files during development

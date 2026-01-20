@@ -90,9 +90,10 @@ class Certificate(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     issued_at = models.DateTimeField(auto_now_add=True)
-    is_revoked = models.BooleanField(default=False)  # 🔒 SECURITY FLAG
+    is_revoked = models.BooleanField(default=False)
+      # 🔒 SECURITY FLAG
     class Meta:
         unique_together = ("student", "course")
     def __str__(self):
         return f"{self.student.username} - {self.course.title}"
-    
+   

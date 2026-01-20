@@ -9,8 +9,7 @@ from rest_framework.response import Response
 from core.models import Student
 from core.permissions import IsStudent
 from .models import Certificate
-import hashlib
-from django.conf import settings
+
 
 from .models import (
     Course, Lesson, Enrollment, Progress,

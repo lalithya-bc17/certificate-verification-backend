@@ -1,0 +1,10 @@
+<h2>Notifications</h2>
+
+{% for n in notifications %}
+<div class="card">
+    <p>{{ n.message }}</p>
+    <small>{{ n.created_at }}</small>
+</div>
+{% empty %}
+<p>No notifications yet</p>
+{% endfor %}

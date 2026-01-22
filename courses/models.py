@@ -89,11 +89,29 @@ class Certificate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    issued_at = models.DateTimeField(auto_now_add=True)
+    issued_at = models.DateTimeField(blank=True, null=True)
     is_revoked = models.BooleanField(default=False)
       # 🔒 SECURITY FLAG
     class Meta:
         unique_together = ("student", "course")
     def __str__(self):
         return f"{self.student.username} - {self.course.title}"
+    
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+from django.contrib.auth.models import User
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message[:20]}"
    

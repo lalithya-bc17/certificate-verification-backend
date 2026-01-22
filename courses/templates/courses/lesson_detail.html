@@ -1,4 +1,11 @@
-<h1>Lesson Page Loaded</h1>
 
-<p>Lesson ID: {{ lesson.id }}</p>
 <p>Lesson Title: {{ lesson.title }}</p>
+
+{% if lesson.video_url %}
+    <video controls width="100%">
+        <source src="{{ lesson.video_url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+{% else %}
+    <p>No video available for this lesson.</p>
+{% endif %}

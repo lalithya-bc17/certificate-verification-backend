@@ -1,0 +1,11 @@
+<h2>Announcements</h2>
+
+{% for a in announcements %}
+<div class="card">
+    <h3>{{ a.title }}</h3>
+    <p>{{ a.message }}</p>
+    <small>{{ a.created_at }}</small>
+</div>
+{% empty %}
+<p>No announcements</p>
+{% endfor %}

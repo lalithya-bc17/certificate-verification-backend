@@ -8,6 +8,9 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+from rest_framework import serializers
+from .models import Lesson
+
 class LessonSerializer(serializers.ModelSerializer):
     quiz_id = serializers.IntegerField(source="quiz.id", read_only=True)
     has_quiz = serializers.SerializerMethodField()
@@ -15,8 +18,13 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = [
-            "id", "title", "order", "video", "content",
-            "quiz_id", "has_quiz"
+            "id",
+            "title",
+            "order",
+            "video_url",   # ✅ FIXED
+            "content",
+            "quiz_id",
+            "has_quiz"
         ]
 
     def get_has_quiz(self, obj):

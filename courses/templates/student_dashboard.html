@@ -1,33 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Student Dashboard</title>
-    <link rel="stylesheet" href="{% static 'courses/dashboard.css' %}">
-</head>
-<body>
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 
-<h1>My Learning Dashboard</h1>
+<div class="dashboard-wrapper">
 
-{% for c in dashboard %}
-<div class="course-card">
-    <h2>{{ c.course }}</h2>
+  <h1 class="page-title">My Learning</h1>
 
-    <div class="progress-container">
+  <div class="dashboard-grid">
+    {% for c in dashboard %}
+    <div class="course-card">
+
+  <div class="course-row">
+
+    <!-- LEFT SIDE -->
+    <div class="course-left">
+      <h3 class="course-title">{{ c.course }}</h3>
+
+      <p class="progress-text">
+        {{ c.completed }}/{{ c.total_lessons }} lessons completed
+      </p>
+
+      <div class="progress-container">
         <div class="progress-bar" style="width: {{ c.progress }}%"></div>
+      </div>
     </div>
 
-    <p>{{ c.completed }} / {{ c.total_lessons }} lessons completed</p>
+    <!-- RIGHT SIDE -->
+    <div class="course-right">
+      <a href="/courses/{{ c.course_id }}/lessons/" class="btn">View Lessons</a>
+      <a href="/api/student/course/{{ c.course_id }}/resume/" class="btn-secondary">Resume</a>
+    </div>
 
-    <a href="/api/student/course/{{ c.course_id }}/resume/" class="btn">
-        ▶ Continue Learning
-    </a>
+  </div>
 
-    <a href="/courses/{{ c.course_id }}/lessons/" class="btn-secondary">
-        View Lessons
-    </a>
-    <a href="{% url 'notifications' %}">🔔 Notifications</a>
 </div>
-{% endfor %}
+      <a href="{% url 'notifications' %}" class="notification-link">
+        🔔 Notifications
+      </a>
 
-</body>
-</html>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>

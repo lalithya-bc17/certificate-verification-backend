@@ -484,6 +484,10 @@ def certificate(request, course_id):
         student=user,                    # ✅ User model (matches Certificate)
         course=course,
     )
+    if not certificate_obj.issued_at:
+        certificate_obj.issued_at = now()
+        certificate_obj.save()
+
     if created:
        Notification.objects.create(
         user=request.user,
@@ -492,11 +496,9 @@ def certificate(request, course_id):
     
 
     # 🚫 Block revoked certificates from downloading
-    
-    if not certificate_obj.issued_at:
-        certificate_obj.issued_at = now()
-        certificate_obj.save()
 
+    if certificate_obj.is_revoked:
+        return HttpResponse("This certificate has been revoked.", status=403)
 
     RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
 

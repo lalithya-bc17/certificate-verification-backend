@@ -1,0 +1,40 @@
+{% extends "courses/base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">My Learning Dashboard</h1>
+
+<div class="dashboard-grid">
+{% for c in dashboard %}
+    <div class="course-card">
+
+        <h2 class="course-title">{{ c.course }}</h2>
+
+        <div class="progress-header">
+            <span class="progress-small">
+                ({{ c.completed }} / {{ c.total_lessons }} lessons)
+            </span>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" style="--progress: {{ c.progress }}%"></div>
+            <span class="progress-big">{{ c.progress }}%</span>
+        </div>
+
+        <div class="course-actions">
+            <a href="/api/student/course/{{ c.course_id }}/resume/" class="btn">
+                ▶ Continue Learning
+            </a>
+
+            <a href="/courses/{{ c.course_id }}/lessons/" class="btn-secondary">
+                View Lessons
+            </a>
+        </div>
+
+    </div>
+{% endfor %}
+</div>
+
+{% endblock %}

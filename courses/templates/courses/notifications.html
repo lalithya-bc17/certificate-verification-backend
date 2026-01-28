@@ -1,10 +1,96 @@
-<h2>Notifications</h2>
+{% extends "courses/base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+<style>
+    .notification-card {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        border-left: 5px solid #1B9AAA;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .notification-card.unread {
+        background: #eef9f8;
+        font-weight: bold;
+    }
+
+    .notification-title {
+        font-size: 16px;
+        margin-bottom: 6px;
+    }
+
+    .notification-message {
+        font-size: 14px;
+        margin-bottom: 8px;
+        font-weight: normal;
+    }
+
+    .notification-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .mark-read-btn {
+        font-size: 12px;
+        color: #1B9AAA;
+        border: 1px solid #1B9AAA;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .mark-read-btn:hover {
+        background: #1B9AAA;
+        color: white;
+    }
+
+    .empty {
+        color: #777;
+    }
+</style>
+
+<h2>🔔 Notifications</h2>
 
 {% for n in notifications %}
-<div class="card">
-    <p>{{ n.message }}</p>
-    <small>{{ n.created_at }}</small>
-</div>
+    <div class="notification-card {% if not n.is_read %}unread{% endif %}">
+
+        <div class="notification-title">
+            {{ n.title }}
+        </div>
+
+        <div class="notification-message">
+            {{ n.message }}
+        </div>
+
+        <div class="notification-footer">
+            <span>{{ n.created_at|date:"M d, Y • h:i A" }}</span>
+
+            {% if not n.is_read %}
+                <form method="post"
+                      action="{% url 'mark_notification_read' n.id %}"
+                      style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="mark-read-btn">
+                        Mark as read
+                    </button>
+                </form>
+            {% else %}
+                <span>✔ Read</span>
+            {% endif %}
+        </div>
+
+    </div>
 {% empty %}
-<p>No notifications yet</p>
+    <p class="empty">No notifications yet</p>
 {% endfor %}
+
+{% endblock %}

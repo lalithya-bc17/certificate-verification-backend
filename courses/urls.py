@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
 
@@ -41,4 +42,14 @@ urlpatterns = [
 ),
     path("announcements/", views.announcements_page, name="announcements"),
     path("notifications/", views.notifications_page, name="notifications"),
+    path("notifications/read/<int:id>/", views.mark_notification_read, name="mark_notification_read"),
+    path(
+    "notifications/unread-count/",
+    views.unread_notification_count,
+    name="unread_notification_count"
+),
+    path("login/", auth_views.LoginView.as_view(template_name="courses/login.html"), name="login"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
+
+   

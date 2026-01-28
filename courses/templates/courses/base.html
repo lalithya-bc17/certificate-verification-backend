@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>{% block title %}EduVillage{% endblock %}</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #F4F7FA;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #142C52;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-left a,
+        .nav-right a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .notification-bell {
+            position: relative;
+            font-size: 18px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background: #EF4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 50%;
+            display: none;   /* ✅ hidden by default */
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ✅ NAVBAR -->
+<div class="navbar">
+    <div class="nav-left">
+        <a href="/dashboard/">Dashboard</a>
+    </div>
+
+    <div class="nav-right">
+        <span>{{ request.user.username }}</span>
+
+        <!-- 🔔 NOTIFICATION BELL -->
+        <a href="/notifications/" class="notification-bell">
+            🔔
+            <span id="notification-badge" class="notification-badge"></span>
+        </a>
+
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- 🔔 AUTO-REFRESH UNREAD BADGE -->
+<script>
+async function updateNotificationBadge() {
+    try {
+        const res = await fetch("/notifications/unread-count/", {
+            credentials: "same-origin"   // ✅ THIS IS THE FIX
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const badge = document.getElementById("notification-badge");
+
+        if (!badge) return;
+
+        if (data.count > 0) {
+            badge.innerText = data.count;
+            badge.style.display = "inline-block";
+        } else {
+            badge.style.display = "none";
+        }
+    } catch (err) {
+        console.log("Notification badge error:", err);
+    }
+}
+
+// run once
+updateNotificationBadge();
+
+// auto refresh every 10 seconds
+setInterval(updateNotificationBadge, 10000);
+</script>
+
+</body>
+</html>

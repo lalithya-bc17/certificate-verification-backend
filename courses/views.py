@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
-from flask import request
+from flask import redirect, request
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,6 +12,7 @@ from core.permissions import IsStudent
 from .models import Certificate
 from django.contrib.auth.decorators import login_required
 from .models import Notification
+from django.http import JsonResponse
 
 
 
@@ -169,10 +170,21 @@ def can_access_lesson(request, lesson_id):
 # PROGRESS & DASHBOARD (API)
 # -----------------------------
 
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.response import Response
+from rest_framework import status
+
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsStudent])
+@permission_classes([IsAuthenticated])
 def student_dashboard(request):
-    student = request.user.student
+    try:
+        student = request.user.student
+    except ObjectDoesNotExist:
+        return Response(
+            {"detail": "User is not a student"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     enrollments = Enrollment.objects.filter(student=student)
 
     data = []
@@ -412,6 +424,7 @@ def student_dashboard_page(request):
         total = lessons.count()
         completed = len(completed_ids)
         percent = int((completed / total) * 100) if total else 0
+        print("PROGRESS:", percent)
 
         resume = None
         for l in lessons:
@@ -603,9 +616,46 @@ def announcements_page(request):
 from django.contrib.auth.decorators import login_required
 from .models import Notification
 
+
 @login_required
 def notifications_page(request):
-    notifications = Notification.objects.all().order_by('-created_at')
-    return render(request, "courses/notifications.html", {
-        "notifications": notifications
-    })
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    print("LOGGED IN USER 👉", request.user)
+    print("IS AUTHENTICATED 👉", request.user.is_authenticated)
+    print("NOTIFICATIONS FOUND 👉", notifications.count())
+
+    return render(
+        request,
+        "courses/notifications.html",
+        {"notifications": notifications}
+    )
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Notification
+
+@login_required
+def mark_notification_read(request, id):
+    notification = get_object_or_404(
+        Notification,
+        id=id,
+        user=request.user   # 🔐 security check
+    )
+
+    notification.is_read = True
+    notification.save()
+
+    return redirect("notifications")
+
+
+@login_required
+def unread_notification_count(request):
+    count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
+
+    return JsonResponse({"count": count})

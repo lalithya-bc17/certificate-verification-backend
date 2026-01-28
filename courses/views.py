@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
-from flask import redirect, request
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -404,7 +404,7 @@ def submit_quiz(request, quiz_id):
 # -----------------------------
 # PHASE-4B — STUDENT DASHBOARD UI
 # -----------------------------
-
+# LEGACY - DO NOT USE FOR REACT
 @login_required
 def student_dashboard_page(request):
     student = request.user.student
@@ -600,13 +600,13 @@ from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, get_object_or_404
 from .models import Lesson
-
+# LEGACY - DO NOT USE FOR REACT
 def lesson_detail_page(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
     return render(request, "courses/lesson_detail.html", {
         "lesson": lesson
     })
-
+# LEGACY - DO NOT USE FOR REACT
 def announcements_page(request):
     announcements = Announcement.objects.order_by('-created_at')
     return render(request, "courses/announcements.html", {
@@ -615,47 +615,54 @@ def announcements_page(request):
 
 from django.contrib.auth.decorators import login_required
 from .models import Notification
+# LEGACY - DO NOT USE FOR REACT
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Notification
 
-@login_required
-def notifications_page(request):
+# =========================
+# 🔔 NOTIFICATIONS (JWT API)
+# =========================
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def notifications_api(request):
     notifications = Notification.objects.filter(
         user=request.user
     ).order_by("-created_at")
 
-    print("LOGGED IN USER 👉", request.user)
-    print("IS AUTHENTICATED 👉", request.user.is_authenticated)
-    print("NOTIFICATIONS FOUND 👉", notifications.count())
+    return Response([
+        {
+            "id": n.id,
+            "message": n.message,
+            "is_read": n.is_read,
+            "created_at": n.created_at,
+        }
+        for n in notifications
+    ])
 
-    return render(
-        request,
-        "courses/notifications.html",
-        {"notifications": notifications}
-    )
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Notification
-
-@login_required
-def mark_notification_read(request, id):
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_notification_read_api(request, id):
     notification = get_object_or_404(
         Notification,
         id=id,
-        user=request.user   # 🔐 security check
+        user=request.user
     )
-
     notification.is_read = True
     notification.save()
+    return Response({"success": True})
 
-    return redirect("notifications")
 
-
-@login_required
-def unread_notification_count(request):
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def unread_notification_count_api(request):
     count = Notification.objects.filter(
         user=request.user,
         is_read=False
     ).count()
-
-    return JsonResponse({"count": count})
+    return Response({"count": count})

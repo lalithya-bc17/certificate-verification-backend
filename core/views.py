@@ -28,8 +28,10 @@ def teachers_list(request):
 
 from rest_framework.permissions import AllowAny
 
+from courses.models import Course, Enrollment
+
 @api_view(["POST"])
-@permission_classes([AllowAny])   # ✅ THIS IS THE FIX
+@permission_classes([AllowAny])
 def student_signup(request):
     data = request.data
 
@@ -50,11 +52,19 @@ def student_signup(request):
             password=password
         )
 
-        # ✅ auto create student profile
-        Student.objects.create(user=user)
+        # ✅ Create student profile
+        student = Student.objects.create(user=user)
+
+        # ✅ AUTO-ENROLL INTO DEFAULT COURSE
+        default_course = Course.objects.first()   # Python course
+        if default_course:
+            Enrollment.objects.get_or_create(
+                student=student,
+                course=default_course
+            )
 
         return Response(
-            {"message": "Student account created successfully"},
+            {"message": "Student account created & enrolled"},
             status=status.HTTP_201_CREATED
         )
 

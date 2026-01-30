@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.models import Student
-from core.permissions import IsStudent
+from core.permissions import IsStudent, IsTeacher
 from .models import Certificate
 from django.contrib.auth.decorators import login_required
 from .models import Notification
@@ -43,14 +43,12 @@ def course_lessons(request, course_id):
     data = []
     for l in lessons:
         unlocked = is_lesson_unlocked(student, l)
-        completed = Progress.objects.filter(student=student, lesson=l, completed=True).exists()
-        status = "completed" if completed else "incomplete"
         data.append({
             "id": l.id,
             "title": l.title,
             "order": l.order,
             "unlocked": unlocked,
-            "status": status
+            
         })
 
     return Response({
@@ -128,7 +126,7 @@ def quiz_detail(request, quiz_id):
     return Response({
         "id": quiz.id,
         "title": quiz.title,
-        "locked": passed,
+        "locked": False if passed else True,
         "questions": [
             {
                 "id": q.id,
@@ -379,9 +377,6 @@ def submit_quiz(request, quiz_id):
             lesson=lesson,
             defaults={"completed": True}
         )
-
-        # Add quiz to completed quizzes
-        student.completed_quizzes.add(quiz)
 
         # Try to find next lesson by order
         next_lesson = Lesson.objects.filter(
@@ -672,3 +667,54 @@ def unread_notification_count_api(request):
         is_read=False
     ).count()
     return Response({"count": count})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def teacher_add_lesson(request):
+    Lesson.objects.create(
+        title=request.data["title"],
+        content=request.data.get("content", ""),
+        course_id=request.data["course"],
+        order=request.data["order"]
+    )
+    return Response({"success": True})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_quizzes(request):
+    quizzes = Quiz.objects.all()
+
+    data = []
+    for q in quizzes:
+        data.append({
+            "id": q.id,
+            "title": q.title,
+            "lesson_title": q.lesson.title,
+            "question_count": q.questions.count(),
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_students(request):
+    enrollments = Enrollment.objects.select_related("student", "course")
+
+    data = []
+    for e in enrollments:
+        total = Lesson.objects.filter(course=e.course).count()
+        completed = Progress.objects.filter(
+            student=e.student,
+            lesson__course=e.course,
+            completed=True
+        ).count()
+
+        progress = int((completed / total) * 100) if total else 0
+
+        data.append({
+            "student": e.student.user.username,
+            "course": e.course.title,
+            "progress": progress,
+        })
+
+    return Response(data)

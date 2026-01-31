@@ -75,8 +75,10 @@ def enroll(request):
 def is_lesson_unlocked(student, lesson):
     """
     First lesson is always unlocked.
-    Other lessons require all previous lessons AND their quizzes (if any)
-    to be completed.
+    Other lessons unlock ONLY if previous lessons are completed.
+    Progress.completed already means:
+    - video watched
+    - quiz passed
     """
 
     if lesson.order == 1:
@@ -88,21 +90,13 @@ def is_lesson_unlocked(student, lesson):
     ).order_by("order")
 
     for prev in previous_lessons:
-        # Lesson must be completed
-        lesson_done = Progress.objects.filter(
+        completed = Progress.objects.filter(
             student=student,
             lesson=prev,
             completed=True
         ).exists()
 
-        # Quiz check (SAFE)
-        try:
-            quiz = prev.quiz
-            quiz_done = student.completed_quizzes.filter(id=quiz.id).exists()
-        except Quiz.DoesNotExist:
-            quiz_done = True  # no quiz → OK
-
-        if not (lesson_done and quiz_done):
+        if not completed:
             return False
 
     return True

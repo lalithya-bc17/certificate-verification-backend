@@ -43,11 +43,15 @@ def course_lessons(request, course_id):
     data = []
     for l in lessons:
         unlocked = is_lesson_unlocked(student, l)
+        completed = Progress.objects.filter(student=student, lesson=l, completed=True).exists()
+        status = "completed" if completed else "incomplete"
+        
         data.append({
             "id": l.id,
             "title": l.title,
             "order": l.order,
             "unlocked": unlocked,
+            "status": status
             
         })
 

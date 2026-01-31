@@ -51,8 +51,7 @@ def course_lessons(request, course_id):
             "title": l.title,
             "order": l.order,
             "unlocked": unlocked,
-            "status": status
-            
+            "status": status,   
         })
 
     return Response({
@@ -381,7 +380,9 @@ def submit_quiz(request, quiz_id):
             lesson=lesson,
             defaults={"completed": True}
         )
-
+        # Add quiz to completed quizzes
+        student.completed_quizzes.add(quiz)
+        
         # Try to find next lesson by order
         next_lesson = Lesson.objects.filter(
             course=lesson.course,

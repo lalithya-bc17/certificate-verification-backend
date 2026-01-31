@@ -114,7 +114,6 @@ def lesson_detail(request, lesson_id):
     student = request.user.student
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
-    # Allow reopening completed lessons
     already_done = Progress.objects.filter(
         student=student,
         lesson=lesson,
@@ -124,32 +123,12 @@ def lesson_detail(request, lesson_id):
     if not already_done and not is_lesson_unlocked(student, lesson):
         return Response({"detail": "Lesson locked"}, status=403)
 
-    # SAFE quiz access
-    try:
-        quiz = lesson.quiz
-        quiz_id = quiz.id
-        questions = [
-            {
-                "id": q.id,
-                "text": q.text,
-                "option_a": q.option_a,
-                "option_b": q.option_b,
-                "option_c": q.option_c,
-                "option_d": q.option_d,
-            }
-            for q in quiz.questions.all()
-        ]
-    except Quiz.DoesNotExist:
-        quiz_id = None
-        questions = []
-
     return Response({
         "id": lesson.id,
         "title": lesson.title,
         "content": lesson.content,
         "video_url": lesson.video_url,
-        "quiz_id": quiz_id,
-        "questions": questions,
+        "quiz_id": lesson.quiz.id if hasattr(lesson, "quiz") and lesson.quiz else None,
     })
 
 from django.contrib.auth.decorators import login_required
@@ -366,20 +345,21 @@ def resume_course(request, course_id):
 # -----------------------------
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsStudent])
 def submit_quiz(request, quiz_id):
     student = request.user.student
     quiz = get_object_or_404(Quiz, id=quiz_id)
-    answers = request.data.get("answers", {})
+    lesson = get_object_or_404(Lesson, quiz=quiz)
 
+    answers = request.data.get("answers", {})
     total = quiz.questions.count()
+
     if not answers:
         return Response({"error": "No answers submitted"}, status=400)
 
     correct = 0
     result = []
 
-    # Evaluate answers
     import re
 
     for q in quiz.questions.all():
@@ -388,16 +368,15 @@ def submit_quiz(request, quiz_id):
         is_correct = selected == correct_option
 
         if is_correct:
-           correct += 1
+            correct += 1
 
         result.append({
-           "question_id": q.id,
-           "selected": selected,
-           "correct": correct_option,
-           "is_correct": is_correct
+            "question_id": q.id,
+            "selected": selected,
+            "correct": correct_option,
+            "is_correct": is_correct
         })
 
-        # Save StudentAnswer
         StudentAnswer.objects.update_or_create(
             student=student,
             question=q,
@@ -411,23 +390,22 @@ def submit_quiz(request, quiz_id):
     all_lessons_completed = False
 
     if passed:
-        # Mark current lesson as completed
-        lesson = get_object_or_404(Lesson, quiz=quiz)
+        # mark lesson completed
         Progress.objects.update_or_create(
             student=student,
             lesson=lesson,
             defaults={"completed": True}
         )
-        # Add quiz to completed quizzes
+
+        # mark quiz completed ✅
         student.completed_quizzes.add(quiz)
 
-        # Try to find next lesson by order
+        # find next lesson
         next_lesson = Lesson.objects.filter(
             course=lesson.course,
             order__gt=lesson.order
         ).order_by("order").first()
 
-        # Fallback: if order is duplicate, pick by id
         if not next_lesson:
             next_lesson = Lesson.objects.filter(
                 course=lesson.course,
@@ -437,7 +415,8 @@ def submit_quiz(request, quiz_id):
         if next_lesson:
             next_lesson_id = next_lesson.id
         else:
-            all_lessons_completed 
+            all_lessons_completed = True
+
     return Response({
         "score": score,
         "passed": passed,

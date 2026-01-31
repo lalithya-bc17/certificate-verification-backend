@@ -146,7 +146,7 @@ def quiz_detail(request, quiz_id):
     return Response({
         "id": quiz.id,
         "title": quiz.title,
-        "locked": False if passed else True,
+        "passed": passed,
         "questions": [
             {
                 "id": q.id,

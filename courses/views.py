@@ -572,13 +572,15 @@ def mark_lesson_completed(request, lesson_id):
     student = request.user.student
     lesson = Lesson.objects.get(id=lesson_id)
 
-    # 🔒 SAFETY: if lesson has a quiz, do NOT auto-complete here
+    # ✅ If lesson has quiz → DO NOT mark completed
+    # ❗ BUT return success so frontend unlocks quiz
     if hasattr(lesson, "quiz") and lesson.quiz:
         return Response(
-            {"detail": "Lesson has quiz. Completion via quiz only."},
-            status=400
+            {"success": True, "quiz_required": True},
+            status=200
         )
 
+    # ✅ Lessons without quiz → normal completion
     progress, created = Progress.objects.get_or_create(
         student=student,
         lesson=lesson

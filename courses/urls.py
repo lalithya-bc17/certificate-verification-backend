@@ -33,4 +33,5 @@ urlpatterns = [
     path("teacher/add-lesson/", views.teacher_add_lesson),
     path("teacher/quizzes/", views.teacher_quizzes),
     path("teacher/students/", views.teacher_students),
+    path("api/courses/", views.admin_courses),
 ]

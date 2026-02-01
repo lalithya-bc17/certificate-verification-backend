@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import CustomTokenView
+from .views import CustomTokenView, admin_stats, admin_users
 
 
 urlpatterns = [
@@ -15,4 +15,6 @@ urlpatterns = [
     # ✅ JWT LOGIN WITH ROLE
     path("token/", views.CustomTokenView.as_view(), name="token"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/admin/stats/", admin_stats),
+    path("api/admin/users/", admin_users),
 ]

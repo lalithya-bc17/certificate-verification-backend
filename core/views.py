@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Student, Teacher
 from .serializers import StudentSerializer, TeacherSerializer
 from .permissions import IsStudent, IsTeacher
+from rest_framework.permissions import IsAdminUser
 
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -28,7 +29,7 @@ def teachers_list(request):
 
 from rest_framework.permissions import AllowAny
 
-from courses.models import Course, Enrollment
+from courses.models import Certificate, Course, Enrollment
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -103,3 +104,33 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
 
 class CustomTokenView(TokenObtainPairView):
     serializer_class = CustomTokenSerializer
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_stats(request):
+    return Response({
+        "total_users": User.objects.count(),
+        "total_students": Student.objects.count(),
+        "total_courses": Course.objects.count(),
+        "total_enrollments": Enrollment.objects.count(),
+        "total_certificates": Certificate.objects.count(),
+    })
+
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_users(request):
+    users = User.objects.all()
+    return Response([
+        {
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "is_staff": u.is_staff,
+        }
+        for u in users
+    ])

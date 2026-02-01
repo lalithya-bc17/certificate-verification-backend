@@ -565,21 +565,34 @@ def certificate(request, course_id):
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{course.title}_certificate.pdf"'
     return response
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def mark_lesson_completed(request, lesson_id):
     student = request.user.student
     lesson = Lesson.objects.get(id=lesson_id)
 
-    progress, created = Progress.objects.get_or_create(student=student, lesson=lesson)
+    # 🔒 SAFETY: if lesson has a quiz, do NOT auto-complete here
+    if hasattr(lesson, "quiz") and lesson.quiz:
+        return Response(
+            {"detail": "Lesson has quiz. Completion via quiz only."},
+            status=400
+        )
+
+    progress, created = Progress.objects.get_or_create(
+        student=student,
+        lesson=lesson
+    )
+
     if not progress.completed:
-       progress.completed = True
-       progress.save()
+        progress.completed = True
+        progress.save()
 
     Notification.objects.create(
         user=request.user,
         message="You have successfully completed a lesson 🎉"
     )
+
     return Response({"success": True})
 
 
@@ -736,3 +749,21 @@ def teacher_students(request):
         })
 
     return Response(data)
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+from .models import Course
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_courses(request):
+    courses = Course.objects.all()
+    return Response([
+        {
+            "id": c.id,
+            "title": c.title,
+            "description": c.description,
+        }
+        for c in courses
+    ])

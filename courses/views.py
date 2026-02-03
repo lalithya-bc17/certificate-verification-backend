@@ -193,58 +193,35 @@ from rest_framework import status
 @permission_classes([IsAuthenticated])
 def student_dashboard(request):
     try:
-        user = request.user
-        student, _ = Student.objects.get_or_create(user=user)
+        student = request.user.student
+    except:
+        return Response({"error": "Student profile not found"}, status=400)
 
-        if Course.objects.count() == 0:
-            course = Course.objects.create(
-                title="Demo Course",
-                description="Auto-created demo course"
-            )
+    enrollments = Enrollment.objects.filter(student=student)
 
-            Lesson.objects.create(course=course, title="Intro", order=1)
-            Lesson.objects.create(course=course, title="Basics", order=2)
+    data = []
 
-        if not Enrollment.objects.filter(student=student).exists():
-            for course in Course.objects.all():
-                Enrollment.objects.get_or_create(student=student, course=course)
+    for e in enrollments:
+        lessons = Lesson.objects.filter(course=e.course)
+        total = lessons.count()
 
-                for lesson in Lesson.objects.filter(course=course):
-                    Progress.objects.get_or_create(
-                        student=student,
-                        lesson=lesson,
-                        defaults={"completed": False}
-                    )
+        completed = Progress.objects.filter(
+            student=student,
+            lesson__course=e.course,
+            completed=True
+        ).count()
 
-        enrollments = Enrollment.objects.filter(student=student)
-        data = []
+        percent = int((completed / total) * 100) if total else 0
 
-        for e in enrollments:
-            lessons = Lesson.objects.filter(course=e.course)
-            total = lessons.count()
-            completed = Progress.objects.filter(
-                student=student,
-                lesson__course=e.course,
-                completed=True
-            ).count()
+        data.append({
+            "course_id": e.course.id,
+            "course": e.course.title,
+            "total": total,
+            "completed": completed,
+            "progress": percent
+        })
 
-            percent = int((completed / total) * 100) if total else 0
-
-            data.append({
-                "course_id": e.course.id,
-                "course": e.course.title,
-                "total": total,
-                "completed": completed,
-                "progress": percent
-            })
-
-        return Response(data)
-
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=500
-        )
+    return Response(data)
 
 
 @api_view(["GET"])

@@ -134,3 +134,21 @@ def admin_users(request):
         }
         for u in users
     ])
+from django.contrib.auth.models import User
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def bootstrap_admin(request):
+    if User.objects.filter(is_superuser=True).exists():
+        return Response({"detail": "Admin already exists"}, status=400)
+
+    User.objects.create_superuser(
+        username="admin",
+        password="admin123",
+        email="admin@example.com"
+    )
+
+    return Response({"detail": "Admin created successfully"})

@@ -192,22 +192,46 @@ from rest_framework import status
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def student_dashboard(request):
-    try:
-        student = request.user.student
-    except ObjectDoesNotExist:
-        return Response(
-            {"detail": "User is not a student"},
-            status=status.HTTP_403_FORBIDDEN
+    student = request.user.student
+
+    # 🔥 AUTO-SEED ONLY IF DB IS EMPTY
+    if Course.objects.count() == 0:
+        course = Course.objects.create(
+            title="Demo Course",
+            description="Auto-created demo course"
         )
 
-    enrollments = Enrollment.objects.filter(student=student)
+        lesson1 = Lesson.objects.create(
+            course=course,
+            title="Introduction",
+            order=1
+        )
 
+        lesson2 = Lesson.objects.create(
+            course=course,
+            title="Basics",
+            order=2
+        )
+
+    # 🔥 AUTO-ENROLL STUDENT
+    if not Enrollment.objects.filter(student=student).exists():
+        for course in Course.objects.all():
+            Enrollment.objects.create(student=student, course=course)
+
+            for lesson in Lesson.objects.filter(course=course):
+                Progress.objects.create(
+                    student=student,
+                    lesson=lesson,
+                    completed=False
+                )
+
+    # NORMAL DASHBOARD LOGIC
+    enrollments = Enrollment.objects.filter(student=student)
     data = []
 
     for e in enrollments:
         lessons = Lesson.objects.filter(course=e.course)
         total = lessons.count()
-
         completed = Progress.objects.filter(
             student=student,
             lesson__course=e.course,

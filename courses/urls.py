@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import teacher_create_course, teacher_courses
 
 urlpatterns = [
 
@@ -30,6 +31,9 @@ urlpatterns = [
     path("notifications/", views.notifications_api),
     path("notifications/<int:id>/read/", views.mark_notification_read_api),
     path("notifications/unread-count/", views.unread_notification_count_api),
+    path("teacher/create-course/", views.teacher_create_course),
+    path("teacher/my-courses/", views.teacher_courses),
+
     path("teacher/add-lesson/", views.teacher_add_lesson),
     path("teacher/quizzes/", views.teacher_quizzes),
     path("teacher/students/", views.teacher_students),

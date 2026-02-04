@@ -717,8 +717,50 @@ def unread_notification_count_api(request):
     ).count()
     return Response({"count": count})
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from core.permissions import IsTeacher
+from .models import Course
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from core.permissions import IsTeacher
+from .models import Course
+
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_create_course(request):
+    course = Course.objects.create(
+        title=request.data["title"],
+        description=request.data.get("description", ""),
+        teacher=request.user.teacher
+    )
+    return Response({
+        "id": course.id,
+        "title": course.title,
+        "description": course.description
+    }, status=201)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_courses(request):
+    courses = Course.objects.filter(teacher=request.user.teacher)
+
+    data = []
+    for c in courses:
+        data.append({
+            "id": c.id,
+            "title": c.title,
+            "description": c.description,
+        })
+
+    return Response(data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated,IsTeacher])
 def teacher_add_lesson(request):
     Lesson.objects.create(
         title=request.data["title"],

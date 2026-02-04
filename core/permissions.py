@@ -9,6 +9,9 @@ class IsStudent(BasePermission):
 
         return hasattr(request.user, 'student')
 
+
+from rest_framework.permissions import BasePermission
+
 class IsTeacher(BasePermission):
     def has_permission(self, request, view):
-        return Teacher.objects.filter(user=request.user).exists()
+        return hasattr(request.user, "teacher")

@@ -59,13 +59,32 @@ def course_lessons(request, course_id):
         })
 
 
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsStudent])
-def enroll(request):
-    course_id = request.data.get("course")
+def enroll(request, course_id):
     student = request.user.student
-    Enrollment.objects.get_or_create(student=student, course_id=course_id)
-    return Response({"message": "Enrolled"})
+    course = get_object_or_404(Course, id=course_id)
+
+    enrollment, created = Enrollment.objects.get_or_create(
+        student=student,
+        course=course
+    )
+
+    if not created:
+        return Response(
+            {"detail": "Already enrolled"},
+            status=400
+        )
+
+    return Response(
+        {"detail": "Enrolled successfully"},
+        status=201
+    )
 
 
 # -----------------------------

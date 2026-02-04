@@ -8,7 +8,7 @@ urlpatterns = [
     # Lists (protected)
     path("students/", views.students_list),
     path("teachers/", views.teachers_list),
-
+    
     # Student signup (PUBLIC)
     path("signup/student/", views.student_signup, name="student-signup"),
 

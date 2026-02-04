@@ -8,7 +8,7 @@ urlpatterns = [
     # =====================
     path("courses/", views.course_list),
     path("courses/<int:course_id>/lessons/", views.course_lessons),
-    path("enroll/", views.enroll),
+    path("enroll/<int:course_id>/", views.enroll, name="enroll"),
 
     path("student/dashboard/", views.student_dashboard),
     path("student/continue/", views.resume_learning),

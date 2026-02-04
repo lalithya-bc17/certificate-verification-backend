@@ -32,7 +32,6 @@ from rest_framework.permissions import AllowAny
 from courses.models import Certificate, Course, Enrollment
 
 from django.db import transaction
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def student_signup(request):
@@ -56,16 +55,11 @@ def student_signup(request):
                 password=password
             )
 
-            student = user.student
-            default_course = Course.objects.first()
-            if default_course:
-                Enrollment.objects.get_or_create(
-                    student=student,
-                    course=default_course
-                )
+            # student profile is created automatically
+            # ❌ NO auto enrollment here
 
         return Response(
-            {"message": "Student account created & enrolled"},
+            {"message": "Student account created"},
             status=status.HTTP_201_CREATED
         )
 

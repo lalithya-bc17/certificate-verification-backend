@@ -13,7 +13,7 @@ urlpatterns = [
     path("api/", include("courses.urls")),
 
     # optional HTML routes
-    path("", include("courses.urls")),
+    
 ]
 
 if settings.DEBUG:

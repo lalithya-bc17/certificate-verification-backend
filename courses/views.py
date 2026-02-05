@@ -789,23 +789,54 @@ def teacher_add_lesson(request, course_id):
 def teacher_add_lesson_by_course(request, course_id):
     teacher = request.user.teacher
 
-    # 🔒 ownership enforced HERE
     course = get_object_or_404(
         Course,
         id=course_id,
         teacher=teacher
     )
 
-    order = Lesson.objects.filter(course=course).count() + 1
-
     Lesson.objects.create(
         course=course,
         title=request.data["title"],
         content=request.data.get("content", ""),
-        order=order,
+        order=Lesson.objects.filter(course=course).count() + 1,
     )
 
     return Response({"success": True}, status=201)
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from .models import Lesson
+from courses.permissions import IsTeacher
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_lesson_detail(request, lesson_id):
+    lesson = get_object_or_404(
+        Lesson,
+        id=lesson_id,
+        course__teacher=request.user.teacher
+    )
+
+    if request.method == "GET":
+        return Response({
+            "id": lesson.id,
+            "title": lesson.title,
+            "content": lesson.content,
+            "video_url": lesson.video_url,
+            "order": lesson.order,
+        })
+
+    # PATCH
+    lesson.video_url = request.data.get("video_url", lesson.video_url)
+    lesson.title = request.data.get("title", lesson.title)
+    lesson.content = request.data.get("content", lesson.content)
+    lesson.save()
+
+    return Response({"success": True})
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

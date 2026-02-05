@@ -34,7 +34,11 @@ urlpatterns = [
     path("teacher/create-course/", views.teacher_create_course),
     path("teacher/my-courses/", views.teacher_courses),
 
-    path("teacher/add-lesson/", views.teacher_add_lesson),
+    path("teacher/course/<int:course_id>/add-lesson/", views.teacher_add_lesson),
+    path(
+    "teacher/course/<int:course_id>/add-lesson/",
+    views.teacher_add_lesson_by_course
+    ),
     path("teacher/quizzes/", views.teacher_quizzes),
     path("teacher/students/", views.teacher_students),
     path("api/courses/", views.admin_courses),

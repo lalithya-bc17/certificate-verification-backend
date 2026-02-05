@@ -761,18 +761,48 @@ def teacher_courses(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsTeacher])
-def teacher_add_lesson(request):
-    # 🔒 CRITICAL: enforce ownership
-    course = Course.objects.get(
-        id=request.data["course"],
-        teacher=request.user.teacher
-    )
+def teacher_add_lesson(request, course_id):
+    teacher = request.user.teacher
+
+    try:
+        course = Course.objects.get(id=course_id, teacher=teacher)
+    except Course.DoesNotExist:
+        return Response(
+            {"detail": "You do not own this course"},
+            status=403
+        )
+
+    order = Lesson.objects.filter(course=course).count() + 1
 
     Lesson.objects.create(
         title=request.data["title"],
         content=request.data.get("content", ""),
+        video_url=request.data.get("video_url"),
         course=course,
-        order=request.data["order"]
+        order=order
+    )
+
+    return Response({"success": True}, status=201)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_add_lesson_by_course(request, course_id):
+    teacher = request.user.teacher
+
+    # 🔒 ownership enforced HERE
+    course = get_object_or_404(
+        Course,
+        id=course_id,
+        teacher=teacher
+    )
+
+    order = Lesson.objects.filter(course=course).count() + 1
+
+    Lesson.objects.create(
+        course=course,
+        title=request.data["title"],
+        content=request.data.get("content", ""),
+        order=order,
     )
 
     return Response({"success": True}, status=201)

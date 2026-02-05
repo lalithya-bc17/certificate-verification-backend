@@ -760,15 +760,22 @@ def teacher_courses(request):
     return Response(data)
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated,IsTeacher])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_add_lesson(request):
+    # 🔒 CRITICAL: enforce ownership
+    course = Course.objects.get(
+        id=request.data["course"],
+        teacher=request.user.teacher
+    )
+
     Lesson.objects.create(
         title=request.data["title"],
         content=request.data.get("content", ""),
-        course_id=request.data["course"],
+        course=course,
         order=request.data["order"]
     )
-    return Response({"success": True})
+
+    return Response({"success": True}, status=201)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

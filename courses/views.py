@@ -873,7 +873,9 @@ def teacher_delete_lesson(request, lesson_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_quizzes(request):
-    quizzes = Quiz.objects.all()
+    quizzes = Quiz.objects.filter(
+        lesson__course__teacher=request.user.teacher
+    )
 
     data = []
     for q in quizzes:
@@ -885,6 +887,54 @@ def teacher_quizzes(request):
         })
 
     return Response(data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_create_quiz(request, lesson_id):
+    lesson = get_object_or_404(
+        Lesson,
+        id=lesson_id,
+        course__teacher=request.user.teacher
+    )
+
+    if lesson.quiz:
+        return Response(
+            {"detail": "Quiz already exists.You can only add questions"},
+            status=400
+        )
+
+    quiz = Quiz.objects.create(
+        title=request.data.get("title", "Lesson Quiz")
+    )
+
+    lesson.quiz = quiz
+    lesson.save()
+
+    return Response(
+        {"id": quiz.id, "title": quiz.title},
+        status=201
+    )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_add_question(request, quiz_id):
+    quiz = get_object_or_404(
+        Quiz,
+        id=quiz_id,
+        lesson__course__teacher=request.user.teacher
+    )
+
+    Question.objects.create(
+        quiz=quiz,
+        text=request.data["text"],
+        option_a=request.data["option_a"],
+        option_b=request.data["option_b"],
+        option_c=request.data["option_c"],
+        option_d=request.data["option_d"],
+        correct=request.data["correct"]
+    )
+
+    return Response({"success": True}, status=201)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

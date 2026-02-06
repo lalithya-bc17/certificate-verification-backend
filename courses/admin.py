@@ -40,6 +40,7 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(StudentAnswer)
 class StudentAnswerAdmin(admin.ModelAdmin):
     list_display = ["id", "student", "question", "selected", "is_correct"]
+    
 @admin.register(Certificate)
 class CertificateAdmin(admin.ModelAdmin):
     list_display = ["id", "student", "course", "issued_at"]

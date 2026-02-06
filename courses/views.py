@@ -851,12 +851,15 @@ def teacher_delete_lesson(request, lesson_id):
         course__teacher=teacher
     )
 
-    # OPTIONAL SAFETY CHECK (recommended)
-    if hasattr(lesson, "quiz"):
+    # SAFETY CHECK — correct way
+    try:
+        lesson.quiz
         return Response(
             {"detail": "Cannot delete lesson with quiz"},
             status=400
         )
+    except ObjectDoesNotExist:
+        pass
 
     lesson.delete()
     return Response({"success": True}, status=200)

@@ -804,6 +804,8 @@ def teacher_add_lesson_by_course(request, course_id):
 
     return Response({"success": True}, status=201)
 
+
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -837,6 +839,27 @@ def teacher_lesson_detail(request, lesson_id):
     lesson.save()
 
     return Response({"success": True})
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_delete_lesson(request, lesson_id):
+    teacher = request.user.teacher
+
+    lesson = get_object_or_404(
+        Lesson,
+        id=lesson_id,
+        course__teacher=teacher
+    )
+
+    # OPTIONAL SAFETY CHECK (recommended)
+    if hasattr(lesson, "quiz"):
+        return Response(
+            {"detail": "Cannot delete lesson with quiz"},
+            status=400
+        )
+
+    lesson.delete()
+    return Response({"success": True}, status=200)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

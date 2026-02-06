@@ -41,6 +41,7 @@ urlpatterns = [
     ),
     
     path("teacher/lesson/<int:lesson_id>/",views.teacher_lesson_detail),
+    path("teacher/lesson/<int:lesson_id>/delete/", views.teacher_delete_lesson),
     path("teacher/quizzes/", views.teacher_quizzes),
     path("teacher/students/", views.teacher_students),
     path("courses/", views.admin_courses),

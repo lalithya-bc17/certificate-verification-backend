@@ -840,6 +840,15 @@ def teacher_lesson_detail(request, lesson_id):
 
     return Response({"success": True})
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from courses.models import Lesson
+
+
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_delete_lesson(request, lesson_id):
@@ -851,15 +860,12 @@ def teacher_delete_lesson(request, lesson_id):
         course__teacher=teacher
     )
 
-    # SAFETY CHECK — correct way
-    try:
-        lesson.quiz
+    # ✅ ONLY correct safety check
+    if Quiz.objects.filter(lesson=lesson).exists():
         return Response(
             {"detail": "Cannot delete lesson with quiz"},
             status=400
         )
-    except ObjectDoesNotExist:
-        pass
 
     lesson.delete()
     return Response({"success": True}, status=200)

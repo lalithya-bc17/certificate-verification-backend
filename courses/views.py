@@ -871,18 +871,25 @@ from courses.models import Lesson
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_delete_lesson(request, lesson_id):
-    teacher = request.user.teacher
-
     lesson = get_object_or_404(
         Lesson,
         id=lesson_id,
-        course__teacher=teacher
+        course__teacher=request.user.teacher
     )
 
-    # ✅ ONLY correct safety check
-    if Quiz.objects.filter(lesson=lesson).exists():
+    # ❌ Block if ANY quiz attempt exists
+    if StudentAnswer.objects.filter(
+        question__quiz__lesson=lesson
+    ).exists():
         return Response(
-            {"detail": "Cannot delete lesson with quiz"},
+            {"detail": "Cannot delete. Quiz already attempted."},
+            status=400
+        )
+
+    # ❌ Block if certificate already issued
+    if Certificate.objects.filter(course=lesson.course).exists():
+        return Response(
+            {"detail": "Cannot delete. Certificates already issued."},
             status=400
         )
 
@@ -1014,6 +1021,13 @@ def teacher_delete_question(request, question_id):
         quiz__lesson__course__teacher=request.user.teacher
     )
 
+    # ❌ Block if quiz already attempted
+    if StudentAnswer.objects.filter(question=question).exists():
+        return Response(
+            {"detail": "Cannot delete. Quiz already attempted."},
+            status=400
+        )
+
     question.delete()
     return Response({"detail": "Question deleted"}, status=204)
 
@@ -1040,21 +1054,20 @@ def teacher_update_question(request, question_id):
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_update_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id)
-
-    # 🔒 SAFETY CHECK (VERY IMPORTANT)
-    if quiz.lesson.course.teacher != request.user.teacher:
-        return Response(
-            {"detail": "Not allowed"},
-            status=403
-        )
+    quiz = get_object_or_404(
+        Quiz,
+        id=quiz_id,
+        lesson__course__teacher=request.user.teacher
+    )
 
     quiz.title = request.data.get("title", quiz.title)
+    quiz.description = request.data.get("description", quiz.description)
     quiz.save()
 
     return Response({
         "id": quiz.id,
         "title": quiz.title,
+        "description": quiz.description,
     })
 
 @api_view(["GET"])

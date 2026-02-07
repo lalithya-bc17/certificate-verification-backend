@@ -1070,6 +1070,7 @@ def teacher_update_quiz(request, quiz_id):
         "id": quiz.id,
         "title": quiz.title,
     })
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):

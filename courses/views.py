@@ -975,6 +975,20 @@ def teacher_delete_question(request, question_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
+def teacher_get_lesson_quiz(request, lesson_id):
+    quiz = get_object_or_404(
+        Quiz,
+        lesson__id=lesson_id,
+        lesson__course__teacher=request.user.teacher
+    )
+
+    return Response({
+        "id": quiz.id,
+        "title": quiz.title,
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):
     enrollments = Enrollment.objects.select_related("student", "course")
 

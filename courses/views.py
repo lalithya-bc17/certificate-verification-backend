@@ -759,6 +759,25 @@ def teacher_courses(request):
 
     return Response(data)
 
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_update_course(request, course_id):
+    course = get_object_or_404(
+        Course,
+        id=course_id,
+        teacher=request.user.teacher
+    )
+
+    course.title = request.data.get("title", course.title)
+    course.description = request.data.get("description", course.description)
+    course.save()
+
+    return Response({
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+    })
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_add_lesson(request, course_id):

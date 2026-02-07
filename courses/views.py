@@ -888,32 +888,57 @@ def teacher_quizzes(request):
 
     return Response(data)
 
-@api_view(["POST"])
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated, IsTeacher])
-def teacher_create_quiz(request, lesson_id):
+def teacher_lesson_quiz(request, lesson_id):
     lesson = get_object_or_404(
         Lesson,
         id=lesson_id,
         course__teacher=request.user.teacher
     )
 
-    if lesson.quiz:
-        return Response(
-            {"detail": "Quiz already exists.You can only add questions"},
-            status=400
+    # 🔹 GET → return existing quiz
+    if request.method == "GET":
+        if not lesson.quiz:
+            return Response(
+                {"detail": "Quiz does not exist"},
+                status=404
+            )
+
+        quiz = lesson.quiz
+        return Response({
+            "id": quiz.id,
+            "title": quiz.title
+        })
+
+    # 🔹 POST → create OR return existing quiz
+    if request.method == "POST":
+        if lesson.quiz:
+            quiz = lesson.quiz
+            return Response(
+                {
+                    "id": quiz.id,
+                    "title": quiz.title,
+                    "created": False
+                },
+                status=200
+            )
+
+        quiz = Quiz.objects.create(
+            title=request.data.get("title", "Lesson Quiz")
         )
 
-    quiz = Quiz.objects.create(
-        title=request.data.get("title", "Lesson Quiz")
-    )
+        lesson.quiz = quiz
+        lesson.save()
 
-    lesson.quiz = quiz
-    lesson.save()
-
-    return Response(
-        {"id": quiz.id, "title": quiz.title},
-        status=201
-    )
+        return Response(
+            {
+                "id": quiz.id,
+                "title": quiz.title,
+                "created": True
+            },
+            status=201
+        )
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsTeacher])
@@ -973,19 +998,7 @@ def teacher_delete_question(request, question_id):
     question.delete()
     return Response({"detail": "Question deleted"}, status=204)
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated, IsTeacher])
-def teacher_get_lesson_quiz(request, lesson_id):
-    quiz = get_object_or_404(
-        Quiz,
-        lesson__id=lesson_id,
-        lesson__course__teacher=request.user.teacher
-    )
 
-    return Response({
-        "id": quiz.id,
-        "title": quiz.title,
-    })
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

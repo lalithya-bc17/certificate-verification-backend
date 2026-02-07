@@ -961,6 +961,18 @@ def teacher_quiz_questions(request, quiz_id):
 
     return Response(data)
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_delete_question(request, question_id):
+    question = get_object_or_404(
+        Question,
+        id=question_id,
+        quiz__lesson__course__teacher=request.user.teacher
+    )
+
+    question.delete()
+    return Response({"detail": "Question deleted"}, status=204)
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):

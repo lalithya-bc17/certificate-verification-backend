@@ -998,7 +998,25 @@ def teacher_delete_question(request, question_id):
     question.delete()
     return Response({"detail": "Question deleted"}, status=204)
 
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_update_question(request, question_id):
+    question = get_object_or_404(
+        Question,
+        id=question_id,
+        quiz__lesson__course__teacher=request.user.teacher
+    )
 
+    question.text = request.data.get("text", question.text)
+    question.option_a = request.data.get("option_a", question.option_a)
+    question.option_b = request.data.get("option_b", question.option_b)
+    question.option_c = request.data.get("option_c", question.option_c)
+    question.option_d = request.data.get("option_d", question.option_d)
+    question.correct = request.data.get("correct", question.correct)
+
+    question.save()
+
+    return Response({"detail": "Question updated successfully"})
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])

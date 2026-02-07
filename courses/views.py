@@ -938,6 +938,31 @@ def teacher_add_question(request, quiz_id):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
+def teacher_quiz_questions(request, quiz_id):
+    quiz = get_object_or_404(
+        Quiz,
+        id=quiz_id,
+        lesson__course__teacher=request.user.teacher
+    )
+
+    questions = quiz.questions.all()
+
+    data = []
+    for q in questions:
+        data.append({
+            "id": q.id,
+            "text": q.text,
+            "option_a": q.option_a,
+            "option_b": q.option_b,
+            "option_c": q.option_c,
+            "option_d": q.option_d,
+            "correct": q.correct,
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):
     enrollments = Enrollment.objects.select_related("student", "course")
 

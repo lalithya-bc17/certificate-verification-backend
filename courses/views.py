@@ -1018,6 +1018,25 @@ def teacher_update_question(request, question_id):
 
     return Response({"detail": "Question updated successfully"})
 
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_update_quiz(request, quiz_id):
+    quiz = get_object_or_404(
+        Quiz,
+        id=quiz_id,
+        lesson__course__teacher=request.user.teacher
+    )
+
+    quiz.title = request.data.get("title", quiz.title)
+    quiz.description = request.data.get("description", quiz.description)
+    quiz.save()
+
+    return Response({
+        "id": quiz.id,
+        "title": quiz.title,
+        "description": quiz.description,
+    })
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):

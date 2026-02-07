@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import teacher_add_question, teacher_create_course, teacher_courses,  teacher_delete_question,  teacher_lesson_quiz, teacher_quiz_questions, teacher_update_question
+from .views import teacher_add_question, teacher_create_course, teacher_courses,  teacher_delete_question,  teacher_lesson_quiz, teacher_quiz_questions, teacher_update_question, teacher_update_quiz
 
 urlpatterns = [
 
@@ -62,6 +62,10 @@ urlpatterns = [
     "teacher/question/<int:question_id>/update/",
     views.teacher_update_question
     ),
+    path(
+    "teacher/quiz/<int:quiz_id>/update/",
+    views.teacher_update_quiz
+   ),
     path("teacher/students/", views.teacher_students),
     path("courses/", views.admin_courses),
 ]

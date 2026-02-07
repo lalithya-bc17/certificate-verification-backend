@@ -65,7 +65,7 @@ urlpatterns = [
     path(
     "teacher/quiz/<int:quiz_id>/update/",
     views.teacher_update_quiz
-   ),
+    ),
     path("teacher/students/", views.teacher_students),
     path("courses/", views.admin_courses),
 ]

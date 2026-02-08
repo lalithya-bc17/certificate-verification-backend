@@ -548,7 +548,7 @@ def certificate(request, course_id):
 
     RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
 
-    verify_url = f"https://certificate-verification-backend-7gpb.onrender.com/verify-certificate/{certificate_obj.id}/" 
+    verify_url = f"https://certificate-verification-backend-7gpb.onrender.com/api/verify-certificate/{certificate_obj.id}/" 
     print("VERIFY URL:", verify_url)
     
 

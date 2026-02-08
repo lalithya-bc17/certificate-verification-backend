@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from core.views import bootstrap_admin
+from courses.views import verify_certificate
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,7 +14,7 @@ urlpatterns = [
     path("api/", include("courses.urls")),
 
     # optional HTML routes
-    
+    path("verify-certificate/<uuid:id>/", verify_certificate),
 ]
 
 if settings.DEBUG:

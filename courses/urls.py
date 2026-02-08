@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import teacher_add_question, teacher_create_course, teacher_courses,  teacher_delete_question,  teacher_lesson_quiz, teacher_quiz_questions, teacher_update_question, teacher_update_quiz
+from .views import teacher_add_question, teacher_create_course, teacher_my_courses,  teacher_delete_question,  teacher_lesson_quiz, teacher_quiz_questions, teacher_update_question, teacher_update_quiz
 
 urlpatterns = [
 

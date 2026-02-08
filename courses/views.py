@@ -1071,10 +1071,18 @@ def teacher_update_quiz(request, quiz_id):
         "title": quiz.title,
     })
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_students(request):
-    enrollments = Enrollment.objects.select_related("student", "course")
+    teacher = request.user.teacher
+
+    enrollments = Enrollment.objects.filter(
+        course__teacher=teacher
+    ).select_related("student", "course")
 
     data = []
     for e in enrollments:
@@ -1094,6 +1102,7 @@ def teacher_students(request):
         })
 
     return Response(data)
+
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser

@@ -32,7 +32,7 @@ urlpatterns = [
     path("notifications/<int:id>/read/", views.mark_notification_read_api),
     path("notifications/unread-count/", views.unread_notification_count_api),
     path("teacher/create-course/", views.teacher_create_course),
-    path("teacher/courses/", views.teacher_courses),
+    path("teacher/my-courses/", views.teacher_my_courses),
 
     
     path(

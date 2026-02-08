@@ -744,9 +744,11 @@ def teacher_create_course(request):
         "description": course.description
     }, status=201)
 
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
-def teacher_courses(request):
+def teacher_my_courses(request):
     courses = Course.objects.filter(teacher=request.user.teacher)
 
     data = []

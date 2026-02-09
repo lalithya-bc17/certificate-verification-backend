@@ -1107,6 +1107,56 @@ def teacher_students(request):
     return Response(data)
 
 
+from django.db.models import Count
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def teacher_analytics(request):
+    user = request.user
+
+    # Only teachers
+    if not hasattr(user, "teacher"):
+        return JsonResponse({"detail": "Not allowed"}, status=403)
+
+    teacher = user.teacher
+
+    # Courses created by this teacher
+    courses = Course.objects.filter(teacher=teacher)
+    courses_count = courses.count()
+
+    # Enrollments in teacher courses
+    total_students = Enrollment.objects.filter(
+        course__in=courses
+    ).values("student").distinct().count()
+
+    # Certificates issued for teacher courses
+    certificates_count = Certificate.objects.filter(
+        course__in=courses
+    ).count()
+
+    # Completion rate
+    total_enrollments = Enrollment.objects.filter(course__in=courses).count()
+    completed_enrollments = Enrollment.objects.filter(
+        course__in=courses,
+        completed=True
+    ).count()
+
+    completion_rate = 0
+    if total_enrollments > 0:
+        completion_rate = round(
+            (completed_enrollments / total_enrollments) * 100, 2
+        )
+
+    return JsonResponse({
+        "courses_created": courses_count,
+        "total_students": total_students,
+        "certificates_issued": certificates_count,
+        "completion_rate": completion_rate,
+    })
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response

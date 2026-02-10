@@ -511,14 +511,14 @@ from django.conf import settings
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def certificate(request, course_id):
-    user = request.user                  # ✅ User
-    student = request.user.student       # ✅ Student profile
+    user = request.user
+    student = request.user.student
 
     course = get_object_or_404(Course, id=course_id)
 
     total = course.lessons.count()
     done = Progress.objects.filter(
-        student=student,                 # Student model
+        student=student,
         lesson__course=course,
         completed=True
     ).count()
@@ -526,32 +526,32 @@ def certificate(request, course_id):
     if done != total:
         return HttpResponse("You have not completed this course.", status=403)
 
-    certificate_obj, created = Certificate.objects.get_or_create(
-        student=user,                    # ✅ User model (matches Certificate)
-        course=course,
-    )
-    if not certificate_obj.issued_at:
-        certificate_obj.issued_at = now()
-        certificate_obj.save()
+    certificate = Certificate.objects.filter(
+        student=user,
+        course=course
+    ).first()
 
-    if created:
-       Notification.objects.create(
-        user=request.user,
-        message="Your certificate has been generated ✅"
-    )
-    
-
-    # 🚫 Block revoked certificates from downloading
-
-    if certificate_obj.is_revoked:
+    # 🔒 HARD BLOCK REVOKED CERTIFICATES (THIS IS KEY)
+    if certificate and certificate.is_revoked:
         return HttpResponse("This certificate has been revoked.", status=403)
 
-    RENDER_BASE_URL = "https://certificate-verification-backend-7gpb.onrender.com"
+    # Create certificate ONLY ONCE
+    if not certificate:
+        certificate = Certificate.objects.create(
+            student=user,
+            course=course,
+            issued_at=now()
+        )
 
-    verify_url = f"https://certificate-verification-backend-7gpb.onrender.com/verify-certificate/{certificate_obj.id}/" 
-    print("VERIFY URL:", verify_url)
-    
-    
+        Notification.objects.create(
+            user=request.user,
+            message="Your certificate has been generated ✅"
+        )
+
+    verify_url = (
+        f"https://certificate-verification-backend-7gpb.onrender.com/"
+        f"verify-certificate/{certificate.id}/"
+    )
 
     qr = qrcode.make(verify_url)
     buffer = BytesIO()
@@ -569,18 +569,19 @@ def certificate(request, course_id):
         {
             "student_name": user.get_full_name() or user.username,
             "course_name": course.title,
-            "date": now().strftime("%d %B %Y"),
+            "date": certificate.issued_at.strftime("%d %B %Y"),
             "logo_path": logo_path,
             "people_icon": people_icon,
             "qr_base64": qr_base64,
         }
     )
 
-    html = HTML(string=html_string)
-    pdf = html.write_pdf()
+    pdf = HTML(string=html_string).write_pdf()
 
     response = HttpResponse(pdf, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{course.title}_certificate.pdf"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="{course.title}_certificate.pdf"'
+    )
     return response
 
 @api_view(["POST"])

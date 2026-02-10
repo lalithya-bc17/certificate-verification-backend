@@ -1187,6 +1187,45 @@ def teacher_course_completion(request):
 
     return Response(data)
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def teacher_certificates(request):
+    user = request.user
+
+    # Ensure user is a teacher
+    if not hasattr(user, "teacher"):
+        return Response([], status=200)
+
+    certificates = Certificate.objects.filter(
+        course__teacher=user.teacher
+    ).select_related("student", "course")
+
+    data = []
+    for cert in certificates:
+        data.append({
+            "id": str(cert.id),
+            "student": cert.student.get_full_name() or cert.student.username,
+            "course": cert.course.title,
+            "issued_at": cert.issued_at,
+            "is_revoked": cert.is_revoked,
+        })
+
+    return Response(data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def revoke_certificate_teacher(request, cert_id):
+    certificate = get_object_or_404(
+        Certificate,
+        id=cert_id,
+        course__teacher=request.user
+    )
+
+    certificate.is_revoked = True
+    certificate.save()
+
+    return Response({"status": "revoked"})
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response

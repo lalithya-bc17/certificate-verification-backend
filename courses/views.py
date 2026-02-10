@@ -1109,7 +1109,7 @@ from django.http import JsonResponse
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_analytics(request):
     user = request.user
 
@@ -1157,37 +1157,32 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_course_completion(request):
     user = request.user
 
-    # Safety check
+    # 🔒 Safety check
     if not hasattr(user, "teacher"):
-        return Response({"detail": "Not allowed"}, status=403)
+        return Response([], status=200)
 
     teacher = user.teacher
 
-    courses = Course.objects.filter(teacher=teacher)
-
     data = []
 
+    courses = Course.objects.filter(teacher=teacher)
+
     for course in courses:
-        enrollments = Enrollment.objects.filter(course=course)
-        total_students = enrollments.count()
+        students = Enrollment.objects.filter(course=course).count()
+        completed = Certificate.objects.filter(course=course).count()
 
-        completed_students = enrollments.filter(
-            completed=True
-        ).count()
-
-        completion_percent = (
-            round((completed_students / total_students) * 100, 1)
-            if total_students > 0 else 0
-        )
+        completion = 0
+        if students > 0:
+            completion = round((completed / students) * 100, 2)
 
         data.append({
             "course": course.title,
-            "students": total_students,
-            "completion": completion_percent,
+            "students": students,
+            "completion": completion,
         })
 
     return Response(data)

@@ -1162,23 +1162,23 @@ from rest_framework.response import Response
 def teacher_course_completion(request):
     user = request.user
 
-    # 🔒 Safety check
     if not hasattr(user, "teacher"):
         return Response([], status=200)
 
     teacher = user.teacher
-
     data = []
 
     courses = Course.objects.filter(teacher=teacher)
 
     for course in courses:
         students = Enrollment.objects.filter(course=course).count()
-        completed = Certificate.objects.filter(course=course).count()
 
-        completion = 0
-        if students > 0:
-            completion = round((completed / students) * 100, 2)
+        completed = Certificate.objects.filter(
+            course=course,
+            is_revoked=False
+        ).values("student").distinct().count()
+
+        completion = round((completed / students) * 100, 2) if students > 0 else 0
 
         data.append({
             "course": course.title,
@@ -1240,10 +1240,11 @@ def course_student_analytics(request, course_id):
     course = get_object_or_404(Course, id=course_id, teacher=teacher)
 
     total_lessons = course.lessons.count()
-
     data = []
 
-    enrollments = Enrollment.objects.filter(course=course).select_related("student")
+    enrollments = Enrollment.objects.filter(
+        course=course
+    ).select_related("student__user")
 
     for enrollment in enrollments:
         student = enrollment.student
@@ -1262,12 +1263,12 @@ def course_student_analytics(request, course_id):
         completed = completed_count == total_lessons and total_lessons > 0
 
         certificate = Certificate.objects.filter(
-            student=student,
+            student=student.user,   # ✅ correct
             course=course
         ).first()
 
         data.append({
-            "student": student.get_full_name() or student.username,
+            "student": student.user.get_full_name() or student.user.username,
             "completed_lessons": completed_count,
             "total_lessons": total_lessons,
             "completion_percent": completion_percent,

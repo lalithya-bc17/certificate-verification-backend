@@ -1182,6 +1182,7 @@ def teacher_course_completion(request):
 
         data.append({
             "course": course.title,
+            "course_id": course.id,
             "students": students,
             "completion": completion,
         })

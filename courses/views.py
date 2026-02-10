@@ -1228,6 +1228,59 @@ def revoke_certificate_teacher(request, cert_id):
     return Response({"status": "revoked"})
 
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def course_student_analytics(request, course_id):
+    teacher = request.user.teacher
+    course = get_object_or_404(Course, id=course_id, teacher=teacher)
+
+    total_lessons = course.lessons.count()
+
+    data = []
+
+    enrollments = Enrollment.objects.filter(course=course).select_related("student")
+
+    for enrollment in enrollments:
+        student = enrollment.student
+
+        completed_count = Progress.objects.filter(
+            student=student,
+            lesson__course=course,
+            completed=True
+        ).count()
+
+        completion_percent = (
+            round((completed_count / total_lessons) * 100, 2)
+            if total_lessons > 0 else 0
+        )
+
+        completed = completed_count == total_lessons and total_lessons > 0
+
+        certificate = Certificate.objects.filter(
+            student=student,
+            course=course
+        ).first()
+
+        data.append({
+            "student": student.get_full_name() or student.username,
+            "completed_lessons": completed_count,
+            "total_lessons": total_lessons,
+            "completion_percent": completion_percent,
+            "completed": completed,
+            "certificate_status": (
+                "revoked" if certificate and certificate.is_revoked else
+                "issued" if certificate else
+                "not_issued"
+            )
+        })
+
+    return Response(data)
+
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from .models import Course

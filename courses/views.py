@@ -718,11 +718,6 @@ def unread_notification_count_api(request):
     ).count()
     return Response({"count": count})
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from core.permissions import IsTeacher
-from .models import Course
 
 
 from rest_framework.decorators import api_view, permission_classes
@@ -1155,6 +1150,47 @@ def teacher_analytics(request):
         "certificates_issued": certificates_issued,
         "completion_rate": completion_rate,
     })
+
+from django.db.models import Count, Q
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def teacher_course_completion(request):
+    user = request.user
+
+    # Safety check
+    if not hasattr(user, "teacher"):
+        return Response({"detail": "Not allowed"}, status=403)
+
+    teacher = user.teacher
+
+    courses = Course.objects.filter(teacher=teacher)
+
+    data = []
+
+    for course in courses:
+        enrollments = Enrollment.objects.filter(course=course)
+        total_students = enrollments.count()
+
+        completed_students = enrollments.filter(
+            completed=True
+        ).count()
+
+        completion_percent = (
+            round((completed_students / total_students) * 100, 1)
+            if total_students > 0 else 0
+        )
+
+        data.append({
+            "course": course.title,
+            "students": total_students,
+            "completion": completion_percent,
+        })
+
+    return Response(data)
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser

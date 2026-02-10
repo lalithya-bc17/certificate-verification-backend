@@ -1188,7 +1188,7 @@ def teacher_course_completion(request):
     return Response(data)
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def teacher_certificates(request):
     user = request.user
 
@@ -1213,12 +1213,12 @@ def teacher_certificates(request):
     return Response(data)
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def revoke_certificate_teacher(request, cert_id):
     certificate = get_object_or_404(
         Certificate,
         id=cert_id,
-        course__teacher=request.user
+        course__teacher=request.user.teacher
     )
 
     certificate.is_revoked = True

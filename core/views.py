@@ -135,6 +135,37 @@ def admin_users(request):
         }
         for u in users
     ])
+
+from .models import Enrollment, Certificate
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_enrollments(request):
+    enrollments = Enrollment.objects.all()
+    return Response([
+        {
+            "id": e.id,
+            "student_name": e.student.user.username,
+            "course_title": e.course.title,
+        }
+        for e in enrollments
+    ])
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_certificates(request):
+    certificates = Certificate.objects.all()
+    return Response([
+        {
+            "id": c.id,
+            "student_name": c.student.user.username,
+            "course_title": c.course.title,
+            "issued_at": c.issued_at,
+        }
+        for c in certificates
+    ])
+
 from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny

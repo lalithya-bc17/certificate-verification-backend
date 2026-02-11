@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import CustomTokenView, admin_stats, admin_users, bootstrap_admin
+from .views import admin_enrollments, admin_certificates
 
 
 urlpatterns = [
@@ -17,5 +18,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("admin/stats/", views.admin_stats),
     path("admin/users/", views.admin_users),
+    path("admin/enrollments/", views.admin_enrollments),
+    path("admin/certificates/", views.admin_certificates),
     path("api/bootstrap-admin/", bootstrap_admin),
 ]

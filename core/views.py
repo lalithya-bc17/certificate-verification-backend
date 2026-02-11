@@ -136,7 +136,7 @@ def admin_users(request):
         for u in users
     ])
 
-from .models import Enrollment, Certificate
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsAdminUser])

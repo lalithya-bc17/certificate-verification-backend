@@ -719,6 +719,24 @@ def unread_notification_count_api(request):
     ).count()
     return Response({"count": count})
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Notification
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_read(request):
+    user = request.user
+
+    Notification.objects.filter(
+        user=user,
+        is_read=False
+    ).update(is_read=True)
+
+    return Response({"message": "All notifications marked as read"})
+
 
 
 from rest_framework.decorators import api_view, permission_classes

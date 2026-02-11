@@ -126,15 +126,26 @@ from rest_framework.response import Response
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_users(request):
     users = User.objects.all()
-    return Response([
-        {
+    data = []
+
+    for u in users:
+        if u.is_staff:
+            role = "Admin"
+        elif hasattr(u, "teacher"):
+            role = "Teacher"
+        elif hasattr(u, "student"):
+            role = "Student"
+        else:
+            role = "User"
+
+        data.append({
             "id": u.id,
             "username": u.username,
             "email": u.email,
-            "is_staff": u.is_staff,
-        }
-        for u in users
-    ])
+            "role": role,
+        })
+
+    return Response(data)
 
 
 
@@ -164,7 +175,7 @@ def admin_certificates(request):
             "course_title": c.course.title,
             "issued_at": c.issued_at,
             "is_revoked": c.is_revoked,
-            
+
         }
         for c in certificates
     ])

@@ -9,6 +9,10 @@ from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import User
 from rest_framework import status
 from django.db import IntegrityError
+from django.contrib.auth.models import User
+from courses.models import Course, Enrollment, Certificate
+from core.models import Student, Teacher
+from courses.models import Announcement
 
 
 @api_view(['GET'])
@@ -105,9 +109,12 @@ def admin_stats(request):
     return Response({
         "total_users": User.objects.count(),
         "total_students": Student.objects.count(),
+        "total_teachers": Teacher.objects.count(),
         "total_courses": Course.objects.count(),
         "total_enrollments": Enrollment.objects.count(),
         "total_certificates": Certificate.objects.count(),
+        "total_annoncements": Announcement.objects.count(),
+
     })
 
 from django.contrib.auth.models import User

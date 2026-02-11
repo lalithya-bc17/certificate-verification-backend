@@ -83,5 +83,5 @@ urlpatterns = [
     name="course-student-analytics"
     ),
     
-    path("courses/", views.admin_courses),
+    path("admin/courses/", views.admin_courses),
 ]

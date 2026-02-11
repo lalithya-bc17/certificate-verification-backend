@@ -113,7 +113,7 @@ def admin_stats(request):
         "total_courses": Course.objects.count(),
         "total_enrollments": Enrollment.objects.count(),
         "total_certificates": Certificate.objects.count(),
-        "total_annoncements": Announcement.objects.count(),
+        "total_announcements": Announcement.objects.count(),
 
     })
 
@@ -147,6 +147,7 @@ def admin_enrollments(request):
             "id": e.id,
             "student_name": e.student.user.username,
             "course_title": e.course.title,
+            "enrolled_at": e.joined_at,
         }
         for e in enrollments
     ])
@@ -159,7 +160,7 @@ def admin_certificates(request):
     return Response([
         {
             "id": c.id,
-            "student_name": c.student.user.username,
+            "student_name": c.student.username,
             "course_title": c.course.title,
             "issued_at": c.issued_at,
         }

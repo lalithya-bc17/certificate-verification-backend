@@ -98,12 +98,55 @@ class Certificate(models.Model):
         return f"{self.student.username} - {self.course.title}"
     
 class Announcement(models.Model):
+    ROLE_CHOICES = [
+        ("student", "Student"),
+        ("teacher", "Teacher"),
+        ("all", "All"),
+    ]
+
     title = models.CharField(max_length=200)
     message = models.TextField()
+    target_role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="all"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="announcements",
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+    
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Announcement)
+def create_notifications_for_announcement(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    from django.contrib.auth.models import User
+
+    if instance.target_role == "student":
+        users = User.objects.filter(student__isnull=False)
+    elif instance.target_role == "teacher":
+        users = User.objects.filter(teacher__isnull=False)
+    else:
+        users = User.objects.all()
+
+    for user in users:
+        Notification.objects.create(
+            user=user,
+            title=instance.title,
+            message=instance.message,
+            created_by=instance.created_by
+        )
     
 from django.contrib.auth.models import User
 

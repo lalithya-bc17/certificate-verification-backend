@@ -27,11 +27,23 @@ from .serializers import CourseSerializer, LessonSerializer
 # COURSES & ENROLLMENT
 # -----------------------------
 
+from django.db.models import Q
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def course_list(request):
+    search = request.GET.get("search", "")
+
     courses = Course.objects.all()
-    return Response(CourseSerializer(courses, many=True).data)
+
+    if search:
+        courses = courses.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search)
+        )
+
+    serializer = CourseSerializer(courses, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])

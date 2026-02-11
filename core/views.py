@@ -163,6 +163,8 @@ def admin_certificates(request):
             "student_name": c.student.username,
             "course_title": c.course.title,
             "issued_at": c.issued_at,
+            "is_revoked": c.is_revoked,
+            
         }
         for c in certificates
     ])

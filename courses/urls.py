@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .views import course_student_analytics, mark_all_notifications_read, revoke_certificate_teacher, teacher_analytics, teacher_certificates, teacher_course_completion
 from .views import teacher_add_question, teacher_create_course, teacher_my_courses,  teacher_delete_question,  teacher_lesson_quiz, teacher_quiz_questions, teacher_update_question, teacher_update_quiz
+from .views import teacher_course_lessons
 
 urlpatterns = [
 
@@ -43,6 +44,7 @@ urlpatterns = [
     ),
     
     path("teacher/lesson/<int:lesson_id>/",views.teacher_lesson_detail),
+    path("teacher/course/<int:course_id>/lessons/", views.teacher_course_lessons),
     path("teacher/lesson/<int:lesson_id>/delete/", views.teacher_delete_lesson),
     path("teacher/quizzes/", views.teacher_quizzes),
     

@@ -635,6 +635,7 @@ from django.shortcuts import get_object_or_404, render
 
 from django.shortcuts import render, get_object_or_404
 from .models import Certificate
+
 def verify_certificate(request, id):
     try:
         certificate = Certificate.objects.get(id=id)
@@ -897,6 +898,25 @@ def teacher_lesson_detail(request, lesson_id):
     lesson.save()
 
     return Response({"success": True})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def teacher_course_lessons(request, course_id):
+    lessons = Lesson.objects.filter(
+        course_id=course_id,
+        course__teacher=request.user.teacher
+    ).order_by("order")
+
+    data = [
+        {
+            "id": l.id,
+            "title": l.title,
+            "order": l.order,
+        }
+        for l in lessons
+    ]
+
+    return Response(data)
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated

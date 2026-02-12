@@ -772,19 +772,29 @@ def teacher_create_course(request):
     }, status=201)
 
 
+from django.db.models import Q
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsTeacher])
 def teacher_my_courses(request):
+    search = request.GET.get("search", "")
+
     courses = Course.objects.filter(teacher=request.user.teacher)
 
-    data = []
-    for c in courses:
-        data.append({
+    if search:
+        courses = courses.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search)
+        )
+
+    data = [
+        {
             "id": c.id,
             "title": c.title,
             "description": c.description,
-        })
+        }
+        for c in courses
+    ]
 
     return Response(data)
 
@@ -1317,10 +1327,21 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from .models import Course
 
+from django.db.models import Q
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_courses(request):
+    search = request.GET.get("search", "")
+
     courses = Course.objects.all()
+
+    if search:
+        courses = courses.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search)
+        )
+
     return Response([
         {
             "id": c.id,

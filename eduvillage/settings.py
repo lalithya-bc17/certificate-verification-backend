@@ -94,21 +94,10 @@ WSGI_APPLICATION = 'eduvillage.wsgi.application'
 
 import os
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql"
-        if os.environ.get("DATABASE_HOST")
-        else "django.db.backends.sqlite3",
+import dj_database_url
 
-        "NAME": os.environ.get("DATABASE_NAME", BASE_DIR / "db.sqlite3"),
-        "USER": os.environ.get("DATABASE_USER", ""),
-        "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
-        "HOST": os.environ.get("DATABASE_HOST", ""),
-        "PORT": "5432",
-        "OPTIONS": {
-            "sslmode": "require"
-        } if os.environ.get("DATABASE_HOST") else {},
-    }
+DATABASES = {
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 
 # Password validation

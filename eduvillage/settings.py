@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-dev-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "certificate-verification-backend-7gpb.onrender.com",
@@ -105,6 +105,9 @@ DATABASES = {
         "PASSWORD": os.environ.get("DATABASE_PASSWORD", ""),
         "HOST": os.environ.get("DATABASE_HOST", ""),
         "PORT": "5432",
+        "OPTIONS": {
+            "sslmode": "require"
+        } if os.environ.get("DATABASE_HOST") else {},
     }
 }
 
